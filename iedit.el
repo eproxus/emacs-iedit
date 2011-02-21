@@ -81,6 +81,11 @@
   :type 'boolean
   :group 'iedit)
 
+(defcustom iedit-case-sensitive-default 't
+  "If no-nil, matching is case sensitive"
+  :type 'boolean
+  :group 'iedit)
+
 (defcustom iedit-unmatched-lines-invisible-default nil
   "If no-nil, hide lines that do not cover any occurrences by
 default."
@@ -111,6 +116,10 @@ configurable via `iedit-occurrence-face'.")
   "This is buffer local variable which indicates whether
 unmatched lines are hided.")
 
+(defvar iedit-unmatched-lines-invisible nil
+  "This is buffer local variable which indicates whether
+to use case sensitive matching or not.")
+
 (defvar iedit-last-occurrence-in-history nil
   "This is buffer local variable which is the occurrence when
 iedit mode is turned off last time.")
@@ -121,6 +130,7 @@ forward or backward successful")
 
 (make-variable-buffer-local 'iedit-occurrences-overlays)
 (make-variable-buffer-local 'iedit-unmatched-lines-invisible)
+(make-variable-buffer-local 'iedit-case-sensitive-default)
 (make-variable-buffer-local 'iedit-last-occurrence-in-history)
 (make-variable-buffer-local 'iedit-forward-success)
 
@@ -189,12 +199,14 @@ Commands:
   (setq	iedit-mode " Iedit")
   (setq iedit-occurrences-overlays nil)
   (setq iedit-unmatched-lines-invisible iedit-unmatched-lines-invisible-default)
+  (setq iedit-case-sensitive iedit-case-sensitive-default)
   (force-mode-line-update)
   (run-hooks 'iedit-mode-hook)
   (add-hook 'mouse-leave-buffer-hook 'iedit-done)
   (add-hook 'kbd-macro-termination-hook 'iedit-done)
   ;; Find and record each occurrence's markers and add the overlay to the occurrences
-  (let ((counter 0))
+  (let ((counter 0)
+        (case-fold-search (not iedit-case-sensitive)))
   (save-excursion
     (goto-char (point-min))
     (while (search-forward occurrence-exp nil t)
